@@ -251,7 +251,7 @@ class FileUploadHandler {
       // Photo array — pick the largest size
       const photo = media[media.length - 1];
       const key = `${photo.file_unique_id}.jpg`;
-      await this.#uploadFromTelegram(c, {
+      await this.#upload_from_telegram(c, {
         file_id: photo.file_id,
         file_type: FileType.IMAGES,
         key,
@@ -261,7 +261,7 @@ class FileUploadHandler {
       // Video
       const video = media;
       const key = video.file_name || `${video.file_unique_id}.mp4`;
-      await this.#uploadFromTelegram(c, {
+      await this.#upload_from_telegram(c, {
         file_id: video.file_id,
         file_type: FileType.IMAGES,
         key,
@@ -278,7 +278,7 @@ class FileUploadHandler {
     }
 
     const key = audio.file_name || `${audio.file_unique_id}.mp3`;
-    await this.#uploadFromTelegram(c, {
+    await this.#upload_from_telegram(c, {
       file_id: audio.file_id,
       file_type: FileType.MUSIC,
       key,
@@ -297,7 +297,7 @@ class FileUploadHandler {
     const file_type = document.mime_type?.startsWith('image/')
       ? FileType.IMAGES
       : FileType.DOCUMENTS;
-    await this.#uploadFromTelegram(c, {
+    await this.#upload_from_telegram(c, {
       file_id: document.file_id,
       file_type,
       key,
@@ -305,7 +305,7 @@ class FileUploadHandler {
     });
   }
 
-  async #uploadFromTelegram(
+  async #upload_from_telegram(
     c: Context,
     params: {
       file_id: string;
