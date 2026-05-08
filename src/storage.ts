@@ -1,5 +1,5 @@
-import type { Env, FileInfo, UploadedFileInfo, UploadResult } from './type';
-import { FileType } from './type';
+import type { Env, FileInfo, UploadedFileInfo, UploadResult } from "./type";
+import { FileType } from "./type";
 
 export default class StorageManager {
   #bucket: R2Bucket;
@@ -7,7 +7,7 @@ export default class StorageManager {
 
   constructor(env: Env) {
     this.#bucket = env.R2_BUCKET;
-    this.#base_url = env.BASE_URL.replace(/\/+$/, '') + '/';
+    this.#base_url = env.BASE_URL.replace(/\/+$/, "") + "/";
   }
 
   /**
@@ -21,7 +21,7 @@ export default class StorageManager {
    * 按路径分段做 percent-encode，保留 `/` 作为分隔符。
    */
   #encode_key(key: string): string {
-    return key.split('/').map(encodeURIComponent).join('/');
+    return key.split("/").map(encodeURIComponent).join("/");
   }
 
   async list_files(
@@ -29,17 +29,14 @@ export default class StorageManager {
     target_user: string,
   ): Promise<FileInfo[]> {
     // If target_user is 'all', list all files; otherwise, list files for the specific user, optionally filtered by file_type
-    const prefix =
-      target_user === 'all'
-        ? ''
-        : [target_user, file_type]
-            .filter((p) => p && p !== FileType.NULL)
-            .join('/') + '/';
+    const prefix = target_user === "all" ? "" : [target_user, file_type]
+      .filter((p) => p && p !== FileType.NULL)
+      .join("/") + "/";
 
     const options = {
       limit: 50,
       prefix,
-      include: ['customMetadata'],
+      include: ["customMetadata"],
     };
 
     const files: FileInfo[] = [];
@@ -53,8 +50,8 @@ export default class StorageManager {
       });
       for (const { key, size, uploaded, customMetadata } of objects.objects) {
         // if admin wants to list all files but file_type is specified, filter files by file_type
-        if (target_user === 'all' && file_type !== FileType.NULL) {
-          const parts = key.split('/');
+        if (target_user === "all" && file_type !== FileType.NULL) {
+          const parts = key.split("/");
           if (parts[1] !== file_type) continue;
         }
 
@@ -62,7 +59,7 @@ export default class StorageManager {
           key, // the full key with path, e.g. "fwqaaq/audio/song.mp3"
           size,
           uploaded: uploaded.toLocaleString(),
-          author: customMetadata?.uploadedBy || key.split('/')[0], // extract author from metadata or fallback to the first part of the key
+          author: customMetadata?.uploadedBy || key.split("/")[0], // extract author from metadata or fallback to the first part of the key
           url: this.#base_url.concat(this.#encode_key(key)),
         });
       }

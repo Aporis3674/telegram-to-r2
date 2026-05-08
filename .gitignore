@@ -170,3 +170,8 @@ dist
 
 .dev.vars
 .wrangler/
+
+# drizzle kit generated files
+
+drizzle/
+

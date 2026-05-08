@@ -1,6 +1,6 @@
-import { eq, or } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/d1';
-import { block_users_table } from './schema';
+import { eq, or } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import { block_users_table } from "./schema";
 
 export async function is_user_banned(
   db: D1Database,
@@ -11,8 +11,9 @@ export async function is_user_banned(
 
   const filters = [];
   if (chat_id) filters.push(eq(block_users_table.chat_id, chat_id));
-  if (username)
+  if (username) {
     filters.push(eq(block_users_table.username, username.toLowerCase()));
+  }
 
   const result = await d1
     .select()
@@ -32,7 +33,7 @@ export async function block_user(
   const { chat_id, username } = params;
 
   if (!chat_id && !username) {
-    throw new Error('必须提供 chat_id 或 username 其中之一');
+    throw new Error("必须提供 chat_id 或 username 其中之一");
   }
 
   // upsert the block record
@@ -55,7 +56,7 @@ export async function unblock_user(
 ) {
   const d1 = drizzle(db);
 
-  if (typeof identifier === 'number') {
+  if (typeof identifier === "number") {
     return await d1
       .delete(block_users_table)
       .where(eq(block_users_table.chat_id, identifier));

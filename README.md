@@ -7,14 +7,17 @@
 
 > **极简、高效、安全的 Telegram 媒体存储方案。**
 >
-> 基于 Cloudflare Workers + R2 的免费额度，搭建属于你个人的“私人云盘” Telegram 机器人。
+> 基于 Cloudflare Workers + R2 的免费额度，搭建属于你个人的“私人云盘”Telegram
+> 机器人。
 
 ---
 
 ## ✨ 主要功能
 
-- 🚀 **媒体自动同步**：直接向 Bot 发送音频、图片、视频、文档，自动流式上传至 R2。
-- 📂 **智能路径分类**：根据文件类型自动归档到不同的 R2 Bucket 路径。
+- 🚀 **媒体自动同步**：直接向 Bot 发送音频、图片、视频、文档，自动流式上传至
+  R2。
+- 📂 **智能路径分类**：根据文件类型自动归档到不同的 R2 Bucket 路径（music /
+  images / videos / documents）。
 - 🛡️ **双重权限控制**：
   - **白名单制**：通过环境变量 `USERNAMES` 限制初始访问。
   - **黑名单制**：集成 D1 数据库，支持管理员通过 `/block` 实时封禁恶意用户。
@@ -51,7 +54,7 @@ pnpm install
 pnpm wrangler login
 ```
 
-### 2. bucket 和 D1 数据库创建
+### 2. Bucket 和 D1 数据库创建
 
 ```bash
 # 1. 创建 R2 Bucket（示例命令，替换为实际名称）
@@ -62,42 +65,45 @@ pnpm wrangler d1 create test_telegram_r2
 
 > ![NOTE]
 >
->将 `wrangler.toml` 中的 `r2_buckets` 中的 `bucket_name` 和 `d1_databases` 中的 `database_name` 和 `database_id` 替换为你实际创建的资源名称。
+> 将 `wrangler.jsonc` 中的 `r2_buckets` 中的 `bucket_name` 和 `d1_databases`
+> 中的 `database_name` 和 `database_id` 替换为你实际创建的资源名称。
 
 ### 3. 数据库初始化
 
 ```bash
-# 1. 配置 .env 文件，设置 CLOUDFLARE_ACCOUNT_ID、CLOUDFLARE_DATABASE_ID 和 CLOUDFLARE_D1_TOKEN 环境变量
+# 1. 复制 .env.example 为 .env，并设置 CLOUDFLARE_ACCOUNT_ID、CLOUDFLARE_DATABASE_ID 和 CLOUDFLARE_D1_TOKEN 环境变量
 
 # 2. 将表结构应用到远端 D1 数据库
 pnpm run db:push
 ```
 
-### 3. 配置 wrangler.jsonc
+### 4. 配置 wrangler.jsonc
 
-### 3. 配置环境变量
+修改 [`wrangler.jsonc`](./wrangler.jsonc) 中的资源绑定为你实际创建的资源。
 
-修改 [`wrangler.jsonc`](./wrangler.jsonc) 或在 Cloudflare 控制台配置以下变量：
+### 5. 配置环境变量
 
-| 变量名 | 必填 | 示例/说明 |
-| :--- | :--- | :--- |
-| `BOT_TOKEN` | ✅ | 从 [@BotFather](https://t.me/botfather) 获取的 Bot API Token |
-| `ADMIN_USERNAMES` | ✅ | 设置管理员用户 |
-| `WEBHOOK_SECRET` | ✅ | 自定义的 Webhook 安全校验密钥，建议使用长随机字符串 |
-| `BASE_URL` | ✅ | 映射到 R2 的访问域名 |
-| `DB` | ✅ | Cloudflare D1 数据库绑定名称 (需在 wrangler.jsonc 中配置 binding) |
+在 Cloudflare 控制台或通过 `wrangler secret` 设置以下变量：
+
+| 变量名            | 必填 | 示例/说明                                                         |
+| :---------------- | :--- | :---------------------------------------------------------------- |
+| `BOT_TOKEN`       | ✅   | 从 [@BotFather](https://t.me/botfather) 获取的 Bot API Token      |
+| `ADMIN_USERNAMES` | ✅   | 设置管理员用户                                                    |
+| `WEBHOOK_SECRET`  | ✅   | 自定义的 Webhook 安全校验密钥，建议使用长随机字符串               |
+| `BASE_URL`        | ✅   | 映射到 R2 的访问域名                                              |
+| `DB`              | ✅   | Cloudflare D1 数据库绑定名称 (需在 wrangler.jsonc 中配置 binding) |
 
 ## 🎮 指令指南
 
-| 命令 | 权限 | 功能描述 |
-| :--- | :--- | :--- |
-| `/start` | 已授权用户 | 机器人初始化欢迎信息 |
-| `/list -t <type> -u <username>` | 已授权用户 | 列出 `audio` \| `images` \| `documents` |
-| `/delete <key>` | 已授权用户 | 从 R2 中彻底删除指定文件 |
-| `/block` | 管理员 | **回复消息**或**跟随用户名**，将该用户永久封禁 |
-| `/unblock` | 管理员 | **回复消息**或**跟随用户名**，解除封禁 |
-| `/list_blocked` | 管理员 | 列出所有被封禁的用户 |
-| `(直接发送媒体)` | 已授权用户 | 自动触发上传，成功后返回 MarkdownV2 详情卡片 |
+| 命令                            | 权限       | 功能描述                                            |
+| :------------------------------ | :--------- | :-------------------------------------------------- |
+| `/start`                        | 已授权用户 | 机器人初始化欢迎信息                                |
+| `/list -t <type> -u <username>` | 已授权用户 | 列出 `music` \| `images` \| `videos` \| `documents` |
+| `/delete <key>`                 | 已授权用户 | 从 R2 中彻底删除指定文件                            |
+| `/block`                        | 管理员     | **回复消息**或**跟随用户名**，将该用户永久封禁      |
+| `/unblock`                      | 管理员     | **回复消息**或**跟随用户名**，解除封禁              |
+| `/list_blocked`                 | 管理员     | 列出所有被封禁的用户                                |
+| `(直接发送媒体)`                | 已授权用户 | 自动触发上传，成功后返回 MarkdownV2 详情卡片        |
 
 ## 🛠️ 部署流程
 
@@ -117,7 +123,8 @@ https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=<YOUR_WORKER_URL>&secret_
 
 - `<BOT_TOKEN>`: 你的机器人 Token。
 - `<YOUR_WORKER_URL>`: 部署成功后 Cloudflare 提供的 .workers.dev 域名地址。
-- `<WEBHOOK_SECRET>`: 必须与你环境变量中的 WEBHOOK_SECRET 保持一致，用于校验请求来源。
+- `<WEBHOOK_SECRET>`: 必须与你环境变量中的 WEBHOOK_SECRET
+  保持一致，用于校验请求来源。
 
 ## 🤝 贡献与反馈
 
