@@ -4,9 +4,12 @@
 [![Backblaze B2](https://img.shields.io/badge/Backblaze-B2-E2231A?style=for-the-badge&logo=backblaze&logoColor=white)](https://www.backblaze.com/b2)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)](https://orm.drizzle.team/)
 [![grammY](https://img.shields.io/badge/grammY-Framework-32ADFF?style=for-the-badge&logo=telegram&logoColor=white)](https://grammy.dev/)
+[![فارسی](https://img.shields.io/badge/فارسی-نسخه_فارسی-green?style=for-the-badge)](./README_FA.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 > **A minimal, secure Telegram media storage bot on Cloudflare Workers + Backblaze B2.**
+>
+> 🇮🇷 [نسخه فارسی / Persian Version](./README_FA.md)
 >
 > This is a fork of [fwqaaq/telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) that replaces **Cloudflare R2** with **Backblaze B2** for storage — removing the credit card requirement. Also adds **camouflage mode** to hide the worker from automated scanners.
 
