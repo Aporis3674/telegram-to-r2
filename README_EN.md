@@ -1,223 +1,139 @@
-# 🤖 ربات تلگرام برای آپلود فایل روی Backblaze B2
+# 🤖 Telegram to B2 Bot
+
+> 🇮🇷 [نسخه فارسی](./README.md)
 
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Backblaze B2](https://img.shields.io/badge/Backblaze-B2-E2231A?style=for-the-badge&logo=backblaze&logoColor=white)](https://www.backblaze.com/b2)
+[![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)](https://orm.drizzle.team/)
 [![grammY](https://img.shields.io/badge/grammY-Framework-32ADFF?style=for-the-badge&logo=telegram&logoColor=white)](https://grammy.dev/)
+[![فارسی](https://img.shields.io/badge/فارسی-نسخه_فارسی-green?style=for-the-badge)](./README_FA.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-> 🇬🇧 [نسخه انگلیسی / English Version](./README.md)
+> **A minimal, secure Telegram media storage bot on Cloudflare Workers + Backblaze B2.**
+>
+> 🇮🇷 [نسخه فارسی / Persian Version](./README_FA.md)
+>
+> This is a fork of [fwqaaq/telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) that replaces **Cloudflare R2** with **Backblaze B2** for storage — removing the credit card requirement. Also adds **camouflage mode** to hide the worker from automated scanners.
 
 ---
 
-## 📌 این پروژه چیه؟
+## 🆚 What's Different from the Original?
 
-یه **بات تلگرام** هست که فایل‌هاتو (عکس، ویدیو، آهنگ، فایل) رو روی فضای ابری رایگان **Backblaze B2** ذخیره می‌کنه. کل پروژه روی **Cloudflare Workers** اجرا میشه.
-
-**یعنی چی؟** یه "فضای ابری شخصی" داری که فقط با فرستادن فایل به بات تلگرام، فایل‌هات آپلود میشن و یه لینک دانلود برمیگرده.
-
-> ⭐ این پروژه یه **فورک** از [fwqaaq/telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) هست — ساخته شده توسط [@fwqaaq](https://github.com/fwqaaq)
-
-### تفاوت‌ها با پروژه اصلی
-
-| موضوع | پروژه اصلی (R2) | این فورک (B2) |
+| Feature | Original (R2) | This Fork (B2) |
 |---|---|---|
-| **فضای ذخیره‌سازی** | Cloudflare R2 (نیاز به کارت بانکی) | Backblaze B2 (**بدون کارت بانکی**) |
-| **لینک فایل‌ها** | مستقیم از R2 | از طریق خود Worker |
-| **مخفی‌کاری** | ❌ نداره | ✅ مخفی شدن از Cloudflare |
-| **مسیر وبهوک** | `/` (ریشه) | `/tg/hook` (مسیر مخفی) |
+| **Storage** | Cloudflare R2 (requires CC) | Backblaze B2 (free, no CC) |
+| **File Serving** | Direct R2 public URLs | Worker-proxied from B2 |
+| **Stealth** | Standard Worker endpoint | Camouflage to legitimate sites |
+| **Webhook Path** | `/` (root) | `/tg/hook` (secret path) |
+
+> 🎭 **Camouflage Mode:** Any request to the worker that isn't from Telegram is proxied to `docker.com` or `ubuntu.com`, making the worker look like a regular website to Cloudflare's automated scanners.
 
 ---
 
-## ✨ امکانات
+## ✨ Features
 
-- 📤 **آپلود خودکار** — فایل به بات بفرست، خودش آپلود میشه و لینک دانلود برمیگرده
-- 📂 **دسته‌بندی هوشمند** — فایل‌ها بر اساس نوع جدا میشن:
-  - 🎵 `music` — آهنگ‌ها
-  - 🖼️ `images` — عکس‌ها
-  - 🎬 `videos` — ویدیوها
-  - 📄 `documents` — سایر فایل‌ها
-- 🔍 **لیست فایل‌ها** — با دستور `/list` همه فایل‌هاتو ببین
-- 🗑️ **حذف فایل** — با دستور `/delete` فایل حذف کن
-- 🛡️ **کنترل دسترسی** — ادمین میتونه کاربران رو بلاک/آن‌بلاک کنه
-- 🎭 **حالت مخفی** — اسکنرهای Cloudflare نمیفهمن این ورکر برای باته
-
----
-
-## 🛠️ پیش‌نیازها
-
-- اکانت **Backblaze** (رایگان، بدون کارت بانکی)
-- اکانت **Cloudflare** (رایگان)
-- **Node.js** و **pnpm** روی سیستمت
-- یه **بات تلگرام** (از [@BotFather](https://t.me/botfather))
+- 🚀 **Auto media sync**: Send audio, images, videos, documents to the bot — auto-uploaded to B2.
+- 📂 **Smart path classification**: Files sorted by type (`music / images / videos / documents`).
+- 🛡️ **Dual access control**:
+  - **Whitelist**: `ADMIN_USERNAMES` env var.
+  - **Blacklist**: D1 database with `/block` command.
+- 🔍 **Management**:
+  - `/list` — List files with MarkdownV2 formatting.
+  - `/delete` — Remove files from B2.
+- 🎭 **Camouflage**: Unauthorized requests show a real website (docker.com / ubuntu.com).
+- ⚡ **Edge performance**: Runs on Cloudflare's global network.
 
 ---
 
-## 🚀 راه‌اندازی قدم‌به‌قدم
+## 🏗️ Architecture
 
-### ۱. ساخت فضای ذخیره‌سازی Backblaze B2
-
-1. برو به **[backblaze.com](https://www.backblaze.com/** و ثبت‌نام کن
-   - ❌ نیازی به کارت بانکی نیست
-   - ✅ ۱۰ گیگابایت رایگان
-
-2. بعد از لاگین، برو به **B2 Cloud Storage** → **Buckets**
-3. روی **Create a Bucket** بزن
-4. یه اسم بذار مثلاً `telegram-r2`
-5. Files in Bucket: **Private** رو انتخاب کن
-6. روی **Create a Bucket** بزن
-
-حالا یه کلید API بساز:
-7. برو به **App Keys** (از منوی بالا)
-8. روی **Add a New Application Key** بزن
-9. یه اسم بذار مثلاً `telegram-bot`
-10. Bucket access: **باکتی که ساختی** رو انتخاب کن
-11. Type of Access: **Read and Write**
-12. روی **Create New Key** بزن
-13. این مقادیر رو **یادداشت کن** (فقط یه بار نشون داده میشه):
-    - `keyID`
-    - `applicationKey`
-
-> 💡 همچنین از صفحه باکت، `bucketID` و `bucketName` رو هم یادداشت کن
-
----
-
-### ۲. نصب پروژه
-
-```bash
-# کلون کردن
-git clone https://github.com/Aporis3674/telegram-to-r2.git
-cd telegram-to-r2
-
-# نصب وابستگی‌ها
-pnpm install
+```text
+src/
+├── db/              # Database (Drizzle ORM + D1)
+│   ├── schema.ts    # Table definitions
+│   └── index.ts     # CRUD operations
+├── bot.ts           # Bot logic & middleware
+├── index.ts         # Worker entry + camouflage proxy
+├── storage.ts       # Backblaze B2 API wrapper
+├── type.ts          # TypeScript type definitions
+└── utils.ts         # MarkdownV2 formatting helpers
 ```
 
 ---
 
-### ۳. ساخت دیتابیس D1
+## 🛠️ Setup
+
+### 1. Backblaze B2
+
+1. Sign up at [backblaze.com](https://www.backblaze.com/) (no credit card required).
+2. Create a bucket (e.g., `telegram-r2`), set to **Private**.
+3. Create an **Application Key** with Read+Write access to the bucket.
+4. Note down: `keyID`, `applicationKey`, `bucketID`, `bucketName`.
+
+### 2. Cloudflare D1
 
 ```bash
+pnpm install
 pnpm wrangler d1 create telegram_r2
 ```
 
-آی‌دی دیتابیس (مثلاً `86b9d4df-...`) رو توی فایل `wrangler.jsonc` وارد کن.
+Update `wrangler.jsonc` with your `database_id`.
 
----
-
-### ۴. تنظیم `wrangler.jsonc`
-
-فایل `wrangler.jsonc` رو باز کن و مقادیر زیر رو پر کن:
-
-```jsonc
-{
-  "vars": {
-    "ADMIN_USERNAMES": ["یوزرنیم_تلگرامت"],  // بدون @
-    "BASE_URL": "https://اسم-ورکر.زیردامنه.workers.dev",
-    "B2_BUCKET_ID": "آی‌دی_باکت_B2",
-    "B2_BUCKET_NAME": "اسم_باکت_B2",
-    "B2_DOWNLOAD_URL": "https://f005.backblazeb2.com"
-  }
-}
-```
-
----
-
-### ۵. تنظیم اطلاعات محرمانه (Secrets)
-
-این اطلاعات بصورت رمزنگاری‌شده ذخیره میشن و توی کد دیده نمیشن:
+### 3. Configure Secrets
 
 ```bash
-# توکن بات تلگرام (از @BotFather)
-echo "توکن_بات" | pnpm wrangler secret put BOT_TOKEN
-
-# یه رشته تصادفی طولانی برای امنیت وبهوک
-echo "یه_رشته_طولانی_تصادفی" | pnpm wrangler secret put WEBHOOK_SECRET
-
-# اطلاعات B2
-echo "keyID" | pnpm wrangler secret put B2_KEY_ID
-echo "applicationKey" | pnpm wrangler secret put B2_APPLICATION_KEY
+# Set via wrangler secret (these stay encrypted)
+pnpm wrangler secret put BOT_TOKEN          # From @BotFather
+pnpm wrangler secret put WEBHOOK_SECRET     # Random long string
+pnpm wrangler secret put B2_KEY_ID          # From B2 App Key
+pnpm wrangler secret put B2_APPLICATION_KEY # From B2 App Key
 ```
 
----
+### 4. Update `wrangler.jsonc`
 
-### ۶. دیپلوی
+Fill in your actual values for:
+- `ADMIN_USERNAMES` — your Telegram username
+- `B2_BUCKET_ID` — from B2 dashboard
+- `B2_BUCKET_NAME` — your bucket name
+- `BASE_URL` — your worker URL (e.g., `https://my-bot.your-subdomain.workers.dev`)
+
+### 5. Deploy
 
 ```bash
 pnpm run deploy
 ```
 
-بعد از دیپلوی، آدرس ورکر نشون داده میشه مثلاً:
-`https://telegram-bot.moohmadirani.workers.dev`
-
----
-
-### ۷. تنظیم وبهوک تلگرام
+### 6. Set Telegram Webhook
 
 ```bash
-curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=<WORKER_URL>/tg/hook&secret_token=<SECRET>"
+curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=<WORKER_URL>/tg/hook&secret_token=<WEBHOOK_SECRET>"
 ```
 
-جای `<TOKEN>` توکن بات، `<WORKER_URL>` آدرس ورکر، و `<SECRET>` رشته تصادفی WEBHOOK_SECRET رو بذار.
-
-> ⚠️ **مهم:** مسیر وبهوک باید `/tg/hook` باشه. اگه ریشه ورکر رو بزنی، صفحه تقلبی میبینی!
+> ⚠️ Note the `/tg/hook` path — this is the secret webhook endpoint. The root URL shows a camouflage page.
 
 ---
 
-## 🎮 دستورات بات
+## 🎮 Commands
 
-| دستور | دسترسی | توضیح |
+| Command | Permission | Description |
 |---|---|---|
-| `/start` | همه | پیام خوش‌آمدگویی |
-| `/help` | همه | راهنما |
-| `/list` | همه | لیست فایل‌های خودت |
-| `/list -t music` | همه | فقط فایل‌های موسیقی |
-| `/list -u username` | ادمین | فایل‌های یه کاربر خاص |
-| `/delete key` | همه | حذف فایل (فقط فایل‌های خودت) |
-| `/block` | ادمین | بلاک کاربر (ریپلی یا `/block @username`) |
-| `/unblock` | ادمین | آنبلاک کاربر |
-| `/list_blocked` | ادمین | لیست کاربران بلاک شده |
-| *ارسال فایل* | همه | آپلود خودکار فایل |
+| `/start` | Authorized | Welcome message |
+| `/list -t <type> -u <user>` | Authorized | List files (music, images, videos, documents) |
+| `/delete <key>` | Authorized | Delete a file from B2 |
+| `/block` | Admin | Block a user (reply or `/block @username`) |
+| `/unblock` | Admin | Unblock a user |
+| `/list_blocked` | Admin | List blocked users |
+| *(send media)* | Authorized | Auto-upload with MarkdownV2 card |
 
 ---
 
-## 🎭 حالت مخفی چطور کار می‌کنه؟
+## 🤝 Credits
 
-Cloudflare وقتی ببینه ورکرش برای بات تلگرام استفاده میشه، ممکنه بلاکش کنه (ارور ۱۰۱۶). برای حل این مشکل:
-
-1. **هر درخواستی** که به مسیر وبهوک (`/tg/hook`) نباشه، به یه **سایت واقعی** مثل docker.com یا ubuntu.com هدایت میشه
-2. اسکنرهای Cloudflare وقتی سایت رو چک کنن، **صفحه docker.com** رو میبینن و فکر می‌کنن یه سایت معمولیه
-3. فقط **بات تلگرام** با مسیر مخفی و توکن امنیتی میتونه به بات دسترسی داشته باشه
-
-```
-https://ورکر.workers.dev/           → صفحه docker.com (تقلبی 🎭)
-https://ورکر.workers.dev/tg/hook    → بات تلگرام (واقعی 🤖)
-```
+- **Original project**: [fwqaaq/telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) by [@fwqaaq](https://github.com/fwqaaq)
+- **B2 migration & camouflage**: This fork
 
 ---
 
-## ❓ سوالات متداول
+## 📄 License
 
-**Q: فایل‌ها کجا ذخیره میشن؟**
-> روی Backblaze B2 — ۱۰ گیگابایت رایگان، بدون کارت بانکی.
-
-**Q: لینک فایل‌ها عمومیه؟**
-> نه. فایل‌ها روی باکت Private هستن. وقتی کسی لینک رو باز کنه، Worker فایل رو از B2 میگیره و نشون میده.
-
-**Q: Cloudflare بلاکش نمی‌کنه؟**
-> حالت مخفی باعث میشه اسکنرها فکر کنن سایت معمولیه. تا الان تست شده و کار می‌کنه.
-
-**Q: چطور آپدیت کنم؟**
-> کد جدید رو pull بگیر و `pnpm run deploy` بزن. تنظیمات D1 و Secrets حفظ میشن.
-
----
-
-## 🤝 اعتبارات
-
-- **پروژه اصلی**: [fwqaaq/telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) — ساخته شده توسط [@fwqaaq](https://github.com/fwqaaq)
-- **مهاجرت به B2 + حالت مخفی**: این فورک
-
----
-
-## 📄 لایسنس
-
-[MIT](./LICENSE) — همون لایسنس پروژه اصلی
+[MIT](./LICENSE) — same as the original project.
