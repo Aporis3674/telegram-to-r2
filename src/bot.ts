@@ -10,7 +10,7 @@ import {
 } from './db';
 
 /**
- * 检查当前用户是否为管理员
+ * Check if current user is admin
  */
 function is_admin(ctx: Context): boolean {
   const username = ctx.from?.username?.toLowerCase();
@@ -25,7 +25,7 @@ class BotCommandHandler {
   setup_commands(bot: Bot) {
     bot.command('start', (c) =>
       c.reply(
-        'Welcome! I am a cloudflare R2 bot! https://github.com/fwqaaq/telegram-to-r2',
+        'Welcome! I am a Telegram to B2 storage bot! https://github.com/fwqaaq/telegram-to-r2',
       ),
     );
     bot.command('help', (c) => c.reply(MessageFormatter.get_help_message()));
@@ -41,8 +41,8 @@ class BotCommandHandler {
       const args = arguments_parser(raw_args);
 
       // Get file type and target user from arguments
-      const resource_name = args['t'] || args['type'] || 'all'; // default to all
-      const target_user = args['u'] || args['username'] || current_username; // default to self
+      const resource_name = args['t'] || args['type'] || 'all';
+      const target_user = args['u'] || args['username'] || current_username;
 
       // Permission check: only allow users to list their own files.
       const admin = is_admin(c);
@@ -91,17 +91,17 @@ class BotCommandHandler {
       if (!current_username) return;
 
       try {
-        const obj = await c.env.R2_BUCKET.head(key); // 先获取元数据检查权限
-        if (!obj) return await c.reply('未找到该文件。');
+        const head = await this.storage.head_file(key);
+        if (!head.exists) return await c.reply('未找到该文件。');
 
         const admin = is_admin(c);
 
-        // 鉴权：除非是管理员，否则只能删除路径前缀属于自己的文件
+        // Auth: unless admin, can only delete files with own prefix
         if (!admin && !key.startsWith(`${current_username}/`)) {
           return await c.reply('⚠️ 您没有权限删除该文件。');
         }
 
-        await c.env.R2_BUCKET.delete(key);
+        await this.storage.delete_file(key);
         await c.reply(`✅ 文件 \`${key}\` 已成功删除。`, {
           parse_mode: 'MarkdownV2',
         });
@@ -128,8 +128,7 @@ class BotCommandHandler {
           return await c.reply('请提供要封禁的用户名，例如：/block username');
         }
         const username = c.match.trim().toLowerCase();
-        target.username = username.replace(/^@/, ''); // Remove @ if provided
-        // Get chat_id from username if possible (optional, for better blocking)
+        target.username = username.replace(/^@/, '');
         try {
           const chat = await c.api.getChat(`@${target.username}`);
           target.chat_id = chat.id;
@@ -153,22 +152,18 @@ class BotCommandHandler {
     });
 
     bot.command('unblock', async (c) => {
-      // Permission check: only allow admins to unblock users.
       if (!is_admin(c)) {
         return await c.reply('⚠️ 只有管理员可以使用 /unblock 命令。');
       }
 
       const target = {} as { identifier: string | number };
 
-      // Unblock by replying to a user's message
       if (c.message?.reply_to_message?.from) {
         const user = c.message.reply_to_message.from;
-
         target.identifier = user.id;
       } else {
-        // Unblock by /unblock username
         if (!c.match) {
-          return await c.reply('请提供要解封的用户名，例如：/unblock username');
+          return await c.reply('请提供要解封的用户名，例如：/unblock @username');
         }
         const username = c.match.trim().replace(/^@/, '').toLowerCase();
         target.identifier = username;
@@ -185,7 +180,6 @@ class BotCommandHandler {
 
     // list all blocked users (admin only)
     bot.command('list_blocked', async (c) => {
-      // Permission check: only allow admins to list blocked users.
       if (!is_admin(c)) {
         return await c.reply('⚠️ 只有管理员可以使用 /list_blocked 命令。');
       }
@@ -195,12 +189,12 @@ class BotCommandHandler {
         if (blockedUsers.length === 0) {
           return await c.reply('当前没有被封禁的用户。');
         }
-        let message = '🚫 *被封禁的用户列表*: \n\n';
+        let message = '🚫 *被封禁的用户列表*: \\n\\n';
         for (const user of blockedUsers) {
           const parts: string[] = [];
           if (user.username) parts.push(`用户名：@${user.username}`);
           if (user.chat_id) parts.push(`chat_id: ${user.chat_id}`);
-          message += `- ${parts.join(' | ')}\n`;
+          message += `- ${parts.join(' | ')}\\n`;
         }
         await c.reply(MessageFormatter.escape_md(message), {
           parse_mode: 'MarkdownV2',
@@ -219,7 +213,7 @@ class BotCommandHandler {
 class FileUploadHandler {
   constructor(private storage: StorageManager) {}
   setup_upload_handler(bot: Bot) {
-    // media includes photo and video: https://grammy.dev/guide/filter-queries#media
+    // media includes photo and video
     bot.on('message:media', async (c) => {
       await this.#handle_media_upload(c);
     });
@@ -256,7 +250,7 @@ class FileUploadHandler {
         content_type: 'image/jpeg',
       });
     } else {
-      // Video — use VIDEOS type instead of IMAGES
+      // Video
       const video = media;
       const key = video.file_name || `${video.file_unique_id}.mp4`;
       await this.#upload_from_telegram(c, {
@@ -316,11 +310,9 @@ class FileUploadHandler {
   ) {
     const { file_id, file_type, key, content_type } = params;
 
-    // Get file information from #fetch_telegram_file
     const file = await this.#fetch_telegram_file(c, file_id);
     if (!file) return;
 
-    // Get uploader information
     const uploader = c.from?.username?.toLowerCase() || 'unknown';
     const uploaded_information: UploadedFileInfo = {
       key,
@@ -336,19 +328,19 @@ class FileUploadHandler {
         parse_mode: 'MarkdownV2',
       });
     } catch (err) {
-      console.error('[Error uploading file to R2]:', err);
+      const errMsg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      console.error('[Error uploading file to B2]:', err);
       await c.reply(
-        `上传文件时出错。如果问题持续存在，请将问题报告到 https://github.com/fwqaaq/telegram-to-r2。`,
+        `❌ 上传文件时出错
+${errMsg}`,
+        { parse_mode: 'MarkdownV2' },
       );
     }
   }
 
   async #fetch_telegram_file(c: Context, file_id: string) {
     try {
-      // Get file information from Telegram API
       const file = await c.api.getFile(file_id);
-
-      // Construct the file URL to download the file
       const fileUrl = `https://api.telegram.org/file/bot${c.env.BOT_TOKEN}/${file.file_path}`;
       const response = await fetch(fileUrl);
 

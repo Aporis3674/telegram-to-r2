@@ -1,134 +1,134 @@
-# 🤖 Telegram to R2 Bot
+# 🤖 Telegram to B2 Bot
 
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![Backblaze B2](https://img.shields.io/badge/Backblaze-B2-E2231A?style=for-the-badge&logo=backblaze&logoColor=white)](https://www.backblaze.com/b2)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black)](https://orm.drizzle.team/)
 [![grammY](https://img.shields.io/badge/grammY-Framework-32ADFF?style=for-the-badge&logo=telegram&logoColor=white)](https://grammy.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-> **极简、高效、安全的 Telegram 媒体存储方案。**
+> **A minimal, secure Telegram media storage bot on Cloudflare Workers + Backblaze B2.**
 >
-> 基于 Cloudflare Workers + R2 的免费额度，搭建属于你个人的“私人云盘”Telegram
-> 机器人。
+> This is a fork of [fwqaaq/telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) that replaces **Cloudflare R2** with **Backblaze B2** for storage — removing the credit card requirement. Also adds **camouflage mode** to hide the worker from automated scanners.
 
 ---
 
-## ✨ 主要功能
+## 🆚 What's Different from the Original?
 
-- 🚀 **媒体自动同步**：直接向 Bot 发送音频、图片、视频、文档，自动流式上传至
-  R2。
-- 📂 **智能路径分类**：根据文件类型自动归档到不同的 R2 Bucket 路径（music /
-  images / videos / documents）。
-- 🛡️ **双重权限控制**：
-  - **白名单制**：通过环境变量 `USERNAMES` 限制初始访问。
-  - **黑名单制**：集成 D1 数据库，支持管理员通过 `/block` 实时封禁恶意用户。
-- 🔍 **管理便捷**：
-  - `/list`：支持 MarkdownV2 渲染，分类列出文件（管理员可跨用户查看）。
-  - `/delete`：一键清理 R2 存储中的对象。
-- ⚡ **极致性能**：依托 Cloudflare 全球边缘网络，低延迟，冷启动极速。
+| Feature | Original (R2) | This Fork (B2) |
+|---|---|---|
+| **Storage** | Cloudflare R2 (requires CC) | Backblaze B2 (free, no CC) |
+| **File Serving** | Direct R2 public URLs | Worker-proxied from B2 |
+| **Stealth** | Standard Worker endpoint | Camouflage to legitimate sites |
+| **Webhook Path** | `/` (root) | `/tg/hook` (secret path) |
+
+> 🎭 **Camouflage Mode:** Any request to the worker that isn't from Telegram is proxied to `docker.com` or `ubuntu.com`, making the worker look like a regular website to Cloudflare's automated scanners.
 
 ---
 
-## 🏗️ 目录结构
+## ✨ Features
+
+- 🚀 **Auto media sync**: Send audio, images, videos, documents to the bot — auto-uploaded to B2.
+- 📂 **Smart path classification**: Files sorted by type (`music / images / videos / documents`).
+- 🛡️ **Dual access control**:
+  - **Whitelist**: `ADMIN_USERNAMES` env var.
+  - **Blacklist**: D1 database with `/block` command.
+- 🔍 **Management**:
+  - `/list` — List files with MarkdownV2 formatting.
+  - `/delete` — Remove files from B2.
+- 🎭 **Camouflage**: Unauthorized requests show a real website (docker.com / ubuntu.com).
+- ⚡ **Edge performance**: Runs on Cloudflare's global network.
+
+---
+
+## 🏗️ Architecture
 
 ```text
 src/
-├── db/              # 🗄️ 数据库相关
-│   ├── schema.ts    # 表结构定义 (Drizzle)
-│   └── index.ts     # 封装的增删改查逻辑 (如 is_user_banned)
-├── bot.ts           # 🤖 Bot 核心逻辑与中间件 (Authorization/Commands)
-├── index.ts         # 🚀 Worker 入口，处理请求与响应
-├── storage.ts       # 📦 R2 桶操作封装
-├── type.ts          # 📝 全局类型声明
-└── utils.ts         # 🛠️ MarkdownV2 格式化与辅助函数
+├── db/              # Database (Drizzle ORM + D1)
+│   ├── schema.ts    # Table definitions
+│   └── index.ts     # CRUD operations
+├── bot.ts           # Bot logic & middleware
+├── index.ts         # Worker entry + camouflage proxy
+├── storage.ts       # Backblaze B2 API wrapper
+├── type.ts          # TypeScript type definitions
+└── utils.ts         # MarkdownV2 formatting helpers
 ```
 
-## 🛠️ 环境配置
+---
 
-### 1. 环境准备
+## 🛠️ Setup
+
+### 1. Backblaze B2
+
+1. Sign up at [backblaze.com](https://www.backblaze.com/) (no credit card required).
+2. Create a bucket (e.g., `telegram-r2`), set to **Private**.
+3. Create an **Application Key** with Read+Write access to the bucket.
+4. Note down: `keyID`, `applicationKey`, `bucketID`, `bucketName`.
+
+### 2. Cloudflare D1
 
 ```bash
-# 1. 克隆仓库后安装依赖
 pnpm install
-
-# 2. 登录 Cloudflare 账号
-pnpm wrangler login
+pnpm wrangler d1 create telegram_r2
 ```
 
-### 2. Bucket 和 D1 数据库创建
+Update `wrangler.jsonc` with your `database_id`.
+
+### 3. Configure Secrets
 
 ```bash
-# 1. 创建 R2 Bucket（示例命令，替换为实际名称）
-pnpm wrangler r2 bucket create test-for-telegram-r2
-# 2. 创建 D1 数据库
-pnpm wrangler d1 create test_telegram_r2
+# Set via wrangler secret (these stay encrypted)
+pnpm wrangler secret put BOT_TOKEN          # From @BotFather
+pnpm wrangler secret put WEBHOOK_SECRET     # Random long string
+pnpm wrangler secret put B2_KEY_ID          # From B2 App Key
+pnpm wrangler secret put B2_APPLICATION_KEY # From B2 App Key
 ```
 
-> ![NOTE]
->
-> 将 `wrangler.jsonc` 中的 `r2_buckets` 中的 `bucket_name` 和 `d1_databases`
-> 中的 `database_name` 和 `database_id` 替换为你实际创建的资源名称。
+### 4. Update `wrangler.jsonc`
 
-### 3. 数据库初始化
+Fill in your actual values for:
+- `ADMIN_USERNAMES` — your Telegram username
+- `B2_BUCKET_ID` — from B2 dashboard
+- `B2_BUCKET_NAME` — your bucket name
+- `BASE_URL` — your worker URL (e.g., `https://my-bot.your-subdomain.workers.dev`)
 
-```bash
-# 1. 复制 .env.example 为 .env，并设置 CLOUDFLARE_ACCOUNT_ID、CLOUDFLARE_DATABASE_ID 和 CLOUDFLARE_D1_TOKEN 环境变量
-
-# 2. 将表结构应用到远端 D1 数据库
-pnpm run db:push
-```
-
-### 4. 配置 wrangler.jsonc
-
-修改 [`wrangler.jsonc`](./wrangler.jsonc) 中的资源绑定为你实际创建的资源。
-
-### 5. 配置环境变量
-
-在 Cloudflare 控制台或通过 `wrangler secret` 设置以下变量：
-
-| 变量名            | 必填 | 示例/说明                                                         |
-| :---------------- | :--- | :---------------------------------------------------------------- |
-| `BOT_TOKEN`       | ✅   | 从 [@BotFather](https://t.me/botfather) 获取的 Bot API Token      |
-| `ADMIN_USERNAMES` | ✅   | 设置管理员用户                                                    |
-| `WEBHOOK_SECRET`  | ✅   | 自定义的 Webhook 安全校验密钥，建议使用长随机字符串               |
-| `BASE_URL`        | ✅   | 映射到 R2 的访问域名                                              |
-| `DB`              | ✅   | Cloudflare D1 数据库绑定名称 (需在 wrangler.jsonc 中配置 binding) |
-
-## 🎮 指令指南
-
-| 命令                            | 权限       | 功能描述                                            |
-| :------------------------------ | :--------- | :-------------------------------------------------- |
-| `/start`                        | 已授权用户 | 机器人初始化欢迎信息                                |
-| `/list -t <type> -u <username>` | 已授权用户 | 列出 `music` \| `images` \| `videos` \| `documents` |
-| `/delete <key>`                 | 已授权用户 | 从 R2 中彻底删除指定文件                            |
-| `/block`                        | 管理员     | **回复消息**或**跟随用户名**，将该用户永久封禁      |
-| `/unblock`                      | 管理员     | **回复消息**或**跟随用户名**，解除封禁              |
-| `/list_blocked`                 | 管理员     | 列出所有被封禁的用户                                |
-| `(直接发送媒体)`                | 已授权用户 | 自动触发上传，成功后返回 MarkdownV2 详情卡片        |
-
-## 🛠️ 部署流程
-
-### 1. 执行部署
-
-使用 wrangler 将项目发布到 Cloudflare 全球边缘网络：
+### 5. Deploy
 
 ```bash
 pnpm run deploy
 ```
 
-### 2. 配置 Telegram Webhook
+### 6. Set Telegram Webhook
 
-```text
-https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=<YOUR_WORKER_URL>&secret_token=<WEBHOOK_SECRET>
+```bash
+curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=<WORKER_URL>/tg/hook&secret_token=<WEBHOOK_SECRET>"
 ```
 
-- `<BOT_TOKEN>`: 你的机器人 Token。
-- `<YOUR_WORKER_URL>`: 部署成功后 Cloudflare 提供的 .workers.dev 域名地址。
-- `<WEBHOOK_SECRET>`: 必须与你环境变量中的 WEBHOOK_SECRET
-  保持一致，用于校验请求来源。
+> ⚠️ Note the `/tg/hook` path — this is the secret webhook endpoint. The root URL shows a camouflage page.
 
-## 🤝 贡献与反馈
+---
 
-欢迎通过 Issue 反馈 Bug 或提交 PR 完善功能。
+## 🎮 Commands
 
-- GitHub: <https://github.com/fwqaaq/telegram-to-r2>
-- 测试账号: [@test_telegram_r2_bot](https://t.me/test_telegram_r2_bot)
+| Command | Permission | Description |
+|---|---|---|
+| `/start` | Authorized | Welcome message |
+| `/list -t <type> -u <user>` | Authorized | List files (music, images, videos, documents) |
+| `/delete <key>` | Authorized | Delete a file from B2 |
+| `/block` | Admin | Block a user (reply or `/block @username`) |
+| `/unblock` | Admin | Unblock a user |
+| `/list_blocked` | Admin | List blocked users |
+| *(send media)* | Authorized | Auto-upload with MarkdownV2 card |
+
+---
+
+## 🤝 Credits
+
+- **Original project**: [fwqaaq/telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) by [@fwqaaq](https://github.com/fwqaaq)
+- **B2 migration & camouflage**: This fork
+
+---
+
+## 📄 License
+
+[MIT](./LICENSE) — same as the original project.
