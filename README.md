@@ -23,6 +23,7 @@
 | 🔎 حالت اینلاین | توی هر چتی `@botname` تایپ کن تا فایل‌هات رو پیدا و ارسال کنی |
 | 🛡️ پنل ادمین | بلاک/آنبلاک کاربر، آمار کل، مدیریت فایل‌ها |
 | 🌐 صفحه استتار | درخواست‌های غیررباتی صفحه Docker.com نشون میده (ضد اسکن) |
+| 📱 آپلود از مرورگر | صفحه آپلود وب با لاگین، بدون محدودیت حجم |
 
 ---
 
@@ -151,6 +152,9 @@ echo "K001a2b3c4d5e6f7g8h9i0j" | pnpm wrangler secret put B2_APP_KEY
 
 # رمز وبهوک (یه رمز دلخواه بذار)
 echo "mySuperSecret123" | pnpm wrangler secret put WEBHOOK_SECRET
+
+# رمز صفحه آپلود وب (یه رمز دلخواه بذار)
+echo "myUploadPassword" | pnpm wrangler secret put WEB_UPLOAD_PASSWORD
 ```
 
 ### قدم ۸: دیپلوی کن
