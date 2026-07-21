@@ -154,7 +154,7 @@ export default class StorageManager {
 
         files.push({
           key,
-          size: f.size,
+          size: f.contentLength || f.size || 0,
           uploaded: new Date(f.uploadTimestamp).toLocaleString(),
           author: f.fileInfo?.uploadedBy || key.split("/")[0],
           url: this.#base_url.concat("file/", this.#encode_key(key)),
@@ -206,7 +206,7 @@ export default class StorageManager {
       for (const f of data.files) {
         files.push({
           key: f.fileName,
-          size: f.size,
+          size: f.contentLength || f.size || 0,
           uploaded: new Date(f.uploadTimestamp).toLocaleString(),
           author: f.fileInfo?.uploadedBy || f.fileName.split("/")[0],
           url: this.#base_url.concat(this.#encode_key(f.fileName)),
