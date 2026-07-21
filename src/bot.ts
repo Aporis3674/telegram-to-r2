@@ -1072,6 +1072,16 @@ export class TelegramBotBuilder {
       const current_username = c.from?.username?.toLowerCase();
       const chat_id = c.from?.id;
 
+      // Check allowed user IDs (whitelist)
+      try {
+        const allowedIds: number[] = JSON.parse(c.env.ALLOWED_USER_IDS || '[]');
+        if (allowedIds.length > 0 && chat_id && !allowedIds.includes(chat_id)) {
+          return await c.reply('🚫 شما اجازه استفاده از این بات رو ندارید.');
+        }
+      } catch (e) {
+        console.error('ALLOWED_USER_IDS parse error:', e);
+      }
+
       try {
         const is_banned = await is_user_banned(
           c.env.DB,

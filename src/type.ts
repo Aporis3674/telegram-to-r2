@@ -3,6 +3,7 @@ export interface Env {
   BOT_TOKEN: string;
   WEBHOOK_SECRET: string;
   ADMIN_USERNAMES: string[];
+  ALLOWED_USER_IDS: string;
   DB: D1Database;
 
   // B2 credentials
