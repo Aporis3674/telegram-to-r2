@@ -1,65 +1,25 @@
-/**
- * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
- */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "test-telegram-to-r2",
+  "name": "cf-media-bc5f20d0",
   "main": "src/index.ts",
   "compatibility_date": "2025-05-23",
   "observability": {
     "enabled": true
   },
-  /**
-	 * Smart Placement
-	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-	 */
-  // "placement": { "mode": "smart" },
-  /**
-	 * Bindings
-	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
-	 * databases, object storage, AI inference, real-time communication and more.
-	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
-	 */
-  "r2_buckets": [
-    {
-      "bucket_name": "test-for-telegram-r2",
-      "binding": "R2_BUCKET",
-      "remote": true
-    }
-  ],
-  /**
-	 * Environment Variables
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-	 */
-  // "vars": { "MY_VARIABLE": "production_value" },
-  "vars": {
-    // "BOT_TOKEN": "<BOT_TOKEN>",
-    // "WEBHOOK_SECRET": "<WEBHOOK_SECRET>",
-    "ADMIN_USERNAMES": [
-      "fwqaaq"
-    ],
-    "BASE_URL": "https://test-telegram-r2.fwqaaq.com"
-  },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "test_telegram_r2",
-      "database_id": "41c1e967-4abb-4a09-9bfd-95596cda0352"
+      "database_id": "86b9d4df-8e01-4988-8109-9a8c86d38161"
     }
-  ]
-  /**
-	 * Note: Use secrets to store sensitive data.
-	 * https://developers.cloudflare.com/workers/configuration/secrets/
-	 */
-  /**
-	 * Static Assets
-	 * https://developers.cloudflare.com/workers/static-assets/binding/
-	 */
-  // "assets": { "directory": "./public/", "binding": "ASSETS" },
-  /**
-	 * Service Bindings (communicate between multiple Workers)
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
-	 */
-  // "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
+  ],
+  "vars": {
+    "ADMIN_USERNAMES": [
+      "fwqaaq"
+    ],
+    "BASE_URL": "https://cf-media-bc5f20d0.moohmadirani.workers.dev",
+    "B2_BUCKET_ID": "215e447304a18d009df80416",
+    "B2_BUCKET_NAME": "telegram-r2",
+    "B2_DOWNLOAD_URL": "https://f005.backblazeb2.com"
+  }
 }

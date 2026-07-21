@@ -1,11 +1,16 @@
 export interface Env {
-  R2_BUCKET: R2Bucket;
   BASE_URL: string;
-
   BOT_TOKEN: string;
   WEBHOOK_SECRET: string;
   ADMIN_USERNAMES: string[];
   DB: D1Database;
+
+  // B2 credentials
+  B2_KEY_ID: string;
+  B2_APPLICATION_KEY: string;
+  B2_BUCKET_ID: string;
+  B2_BUCKET_NAME: string;
+  B2_DOWNLOAD_URL: string;
 }
 
 export enum FileType {
@@ -13,7 +18,7 @@ export enum FileType {
   IMAGES = "images",
   VIDEOS = "videos",
   DOCUMENTS = "documents",
-  NULL = "null", // All files without specific type
+  NULL = "null",
 }
 
 export interface StorageConfig {
@@ -44,3 +49,31 @@ export type UploadedFileInfo = {
 };
 
 export type UploadResult = FileInfo & { content_type: string };
+
+export interface ShareTokenRow {
+  id: number;
+  token: string;
+  file_key: string;
+  expires_at: Date;
+  created_by: string;
+  created_at: Date;
+}
+
+export interface FolderRow {
+  id: number;
+  name: string;
+  parent_id: number | null;
+  user_id: string;
+  created_at: Date;
+}
+
+export interface StorageStats {
+  total_files: number;
+  total_size: number;
+  by_type: {
+    music: { count: number; size: number };
+    images: { count: number; size: number };
+    videos: { count: number; size: number };
+    documents: { count: number; size: number };
+  };
+}

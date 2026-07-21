@@ -1,17 +1,37 @@
-import { type FileInfo, FileType, type UploadResult } from './type';
+import { type FileInfo, FileType, type StorageStats, type UploadResult } from './type';
 
 export function file_type_to_string(file_type: FileType): string {
   switch (file_type) {
     case FileType.MUSIC:
-      return '音频';
+      return '🎵 موسیقی';
     case FileType.DOCUMENTS:
-      return '文档';
+      return '📄 اسناد';
     case FileType.IMAGES:
-      return '图片';
+      return '🖼️ تصاویر';
     case FileType.VIDEOS:
-      return '视频';
+      return '🎬 ویدیوها';
     default:
-      return '其他类型';
+      return '📂 همه فایل‌ها';
+  }
+}
+
+export function format_size(bytes: number): string {
+  if (bytes < 1024) return `${bytes} بایت`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} کیلوبایت`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} مگابایت`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} گیگابایت`;
+}
+
+export function parse_duration(duration_str: string): number | null {
+  const match = duration_str.match(/^(\d+)(h|d|m)$/i);
+  if (!match) return null;
+  const value = parseInt(match[1]);
+  const unit = match[2].toLowerCase();
+  switch (unit) {
+    case 'm': return value * 60 * 1000;
+    case 'h': return value * 60 * 60 * 1000;
+    case 'd': return value * 24 * 60 * 60 * 1000;
+    default: return null;
   }
 }
 
@@ -21,7 +41,7 @@ export class MessageFormatter {
    */
   static escape_md(text: string): string {
     // 仅转义 MarkdownV2 规定的特殊字符
-    return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+    return text.replace(/[_*\[\]()~`>#+\-=|{}.!]/g, '\\$&');
   }
 
   /**
@@ -35,23 +55,19 @@ export class MessageFormatter {
   static format_file_list(files: FileInfo[], file_type: FileType): string {
     const file_type_str = file_type_to_string(file_type);
 
-    // 这里的文字是固定的，不需要转义（除非包含特殊符号）
-    let message = `📂 *R2 存储中的 ${this.escape_md(file_type_str)} 列表*\n`;
+    let message = `📂 *لیست ${this.escape_md(file_type_str)} در B2*\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
 
     for (const file of files) {
-      const data_str = new Date(file.uploaded).toLocaleString('zh-CN', {
-        timeZone: 'Asia/Shanghai',
-      });
-      const size_str = (file.size / 1024).toFixed(2);
+      const data_str = new Date(file.uploaded).toLocaleString('fa-IR');
+      const size_str = format_size(file.size);
 
-      // 注意：`文件名` 放在代码块内通常不需要转义，但为了稳妥，外部的 . 和 - 必须转义
-      message += `📄 \`${file.key}\`\n`;
-      message += `├ 👤 *上传者:* ${this.escape_md(file.author)}\n`;
-      message += `├ 📏 *大小:* ${this.escape_md(size_str)} KB\n`;
-      message += `├ 🕒 *时间:* ${this.escape_md(data_str)}\n`;
+      message += `📄 \`${this.escapeCodeBlock(file.key)}\`\n`;
+      message += `├ 👤 *آپلودکننده:* ${this.escape_md(file.author)}\n`;
+      message += `├ 📏 *حجم:* ${this.escape_md(size_str)}\n`;
+      message += `├ 🕒 *زمان:* ${this.escape_md(data_str)}\n`;
       const escaped_url = this.escape_url(file.url);
-      message += `└ 🔗 [查看文件](${escaped_url})\n\n`;
+      message += `└ 🔗 [دانلود فایل](${escaped_url})\n\n`;
     }
 
     return message;
@@ -65,21 +81,18 @@ export class MessageFormatter {
   }
 
   static format_upload_success(file: UploadResult): string {
-    const size_kb = (file.size / 1024).toFixed(2);
-    const data_str = new Date(file.uploaded).toLocaleString('zh-CN', {
-      timeZone: 'Asia/Shanghai',
-    });
+    const size_str = format_size(file.size);
+    const data_str = new Date(file.uploaded).toLocaleString('fa-IR');
 
-    // 这里的样式模仿了"卡片"效果
     const lines = [
-      `✅ *文件上传成功*`,
+      `✅ *فایل با موفقیت آپلود شد*`,
       `━━━━━━━━━━━━━━━━━━━━`,
-      `📄 *文件名:* \`${file.key}\``, // 这里的 key 不需要 escape，因为在反引号里
-      `👤 *上传者:* ${this.escape_md(file.author)}`,
-      `📏 *文件大小:* ${this.escape_md(size_kb)} KB`,
-      `🕒 *上传时间:* ${this.escape_md(data_str)}`,
+      `📄 *نام فایل:* \`${this.escapeCodeBlock(file.key)}\``,
+      `👤 *آپلودکننده:* ${this.escape_md(file.author)}`,
+      `📏 *حجم فایل:* ${this.escape_md(size_str)}`,
+      `🕒 *زمان آپلود:* ${this.escape_md(data_str)}`,
       ``,
-      `🔗 [点击此处访问文件](${this.escape_url(file.url)})`,
+      `🔗 [دانلود فایل](${this.escape_url(file.url)})`,
     ];
 
     if (file.content_type.startsWith('image/')) {
@@ -87,7 +100,7 @@ export class MessageFormatter {
       const markdown = `![${filename}](${file.url})`;
       lines.push(
         ``,
-        `📋 *Markdown \\(点击复制\\):*`,
+        `📋 *Markdown \\(برای کپی\\):*`,
         `\`\`\``,
         this.escapeCodeBlock(markdown),
         `\`\`\``,
@@ -99,16 +112,100 @@ export class MessageFormatter {
 
   static get_help_message(): string {
     return (
-      '可用命令:\n' +
-      '/start - 欢迎信息\n' +
-      '/help - 帮助信息\n' +
-      '/list - 列出存储中的文件（示例：/list -t music）\n' +
-      '/delete - 删除存储中的文件（示例：/delete key）\n' +
-      '管理员命令:\n' +
-      '/block - 封禁用户（示例：/block @username 或 回复用户消息并发送 /block）\n' +
-      '/unblock - 解封用户（示例：/unblock @username 或 回复用户消息并发送 /unblock）\n' +
-      '/list_blocked - 列出被封禁的用户\n'
+      '🎮 *دستورات بات:*\n\n' +
+      '📌 `/start` — پیام خوش‌آمدگویی\n' +
+      '📌 `/help` — راهنمای دستورات\n' +
+      '📌 `/list` — لیست فایل‌ها (مثال: `/list -t music`)\n' +
+      '📌 `/delete key` — حذف فایل\n' +
+      '📌 `/stats` — آمار ذخیره‌سازی\n' +
+      '📌 `/search کلمه` — جستجوی فایل\n' +
+      '📌 `/share فایل مدت` — لینک موقت (مثال: `/share file.mp3 24h`)\n' +
+      '📌 `/folders` — مدیریت فولدرها\n' +
+      '📌 `/mkdir نام` — ساخت فولدر\n' +
+      '📌 `/cd نام` — ورود به فولدر\n' +
+      '📌 `/move فایل فولدر` — انتقال فایل\n\n' +
+      '🛡️ *دستورات ادمین:*\n' +
+      '📌 `/admin` — پنل مدیریت\n' +
+      '📌 `/block @username` — بلاک کاربر\n' +
+      '📌 `/unblock @username` — آنبلاک کاربر\n' +
+      '📌 `/list_blocked` — لیست کاربران بلاک‌شده\n\n' +
+      '💡 *نکته:* در هر چتی میتونی @botname رو تایپ کنی تا فایل‌هات رو مستقیم بفرستی!'
     );
+  }
+
+  static format_stats(stats: StorageStats, username: string): string {
+    const total_size_str = format_size(stats.total_size);
+    const lines = [
+      `📊 *آمار ذخیره‌سازی برای* @${this.escape_md(username)}`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      ``,
+      `📦 *کل فایل‌ها:* ${stats.total_files}`,
+      `💾 *حجم کل:* ${this.escape_md(total_size_str)}`,
+      ``,
+      `🎵 *موسیقی:* ${stats.by_type.music.count} فایل \\(${this.escape_md(format_size(stats.by_type.music.size))}\\)`,
+      `🖼️ *تصاویر:* ${stats.by_type.images.count} فایل \\(${this.escape_md(format_size(stats.by_type.images.size))}\\)`,
+      `🎬 *ویدیوها:* ${stats.by_type.videos.count} فایل \\(${this.escape_md(format_size(stats.by_type.videos.size))}\\)`,
+      `📄 *اسناد:* ${stats.by_type.documents.count} فایل \\(${this.escape_md(format_size(stats.by_type.documents.size))}\\)`,
+    ];
+    return lines.join('\n');
+  }
+
+  static format_admin_panel(): string {
+    return (
+      '🔧 *پنل مدیریت*\n' +
+      '━━━━━━━━━━━━━━━━━━━━\n\n' +
+      'یکی از گزینه‌ها رو انتخاب کن:'
+    );
+  }
+
+  static format_search_results(files: FileInfo[], keyword: string, page: number, totalPages: number): string {
+    const lines = [
+      `🔍 *نتایج جستجو برای:* ${this.escape_md(keyword)}`,
+      `📄 *صفحه ${page} از ${totalPages}*`,
+      `━━━━━━━━━━━━━━━━━━━━\n`,
+    ];
+
+    for (const file of files) {
+      const size_str = format_size(file.size);
+      const filename = file.key.split('/').pop() || file.key;
+      lines.push(`📎 \`${this.escapeCodeBlock(filename)}\` — ${this.escape_md(size_str)}`);
+    }
+
+    return lines.join('\n');
+  }
+
+  static format_share_link(baseUrl: string, token: string): string {
+    const url = `${baseUrl}/file/${token}`;
+    const lines = [
+      `🔗 *لینک موقت ساخته شد!*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      ``,
+      `📎 لینک دانلود:`,
+      this.escape_url(url),
+    ];
+    return lines.join('\n');
+  }
+
+  static format_folder_list(folders: { id: number; name: string }[], currentPath: string): string {
+    const breadcrumb = currentPath || '/';
+    const lines = [
+      `📂 *فولدرها* \\(${this.escape_md(breadcrumb)}\\)`,
+      `━━━━━━━━━━━━━━━━━━━━\n`,
+    ];
+
+    if (folders.length === 0) {
+      lines.push(`📁 فولدری وجود ندارد.`);
+    } else {
+      for (const folder of folders) {
+        lines.push(`📁 \`${this.escapeCodeBlock(folder.name)}\``);
+      }
+    }
+
+    lines.push(`\n💡 از /mkdir برای ساخت فولدر جدید استفاده کنید.`);
+    lines.push(`💡 از /cd نام برای ورود به فولدر استفاده کنید.`);
+    lines.push(`💡 از /cd .. برای بازگشت استفاده کنید.`);
+
+    return lines.join('\n');
   }
 }
 
