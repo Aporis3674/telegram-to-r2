@@ -249,26 +249,27 @@ export default class StorageManager {
     };
 
     for (const file of files) {
-      stats.total_size += file.size;
-      const parts = file.key.split("/");
-      const fileType = parts.length > 1 ? parts[1] : "documents";
+      const fileSize = Number(file.size) || 0;
+      stats.total_size += fileSize;
+      const parts = file.key.split('/');
+      const fileType = parts.length > 1 ? parts[1] : 'documents';
       switch (fileType) {
-        case FileType.MUSIC:
+        case 'music':
           stats.by_type.music.count++;
-          stats.by_type.music.size += file.size;
+          stats.by_type.music.size += fileSize;
           break;
         case FileType.IMAGES:
           stats.by_type.images.count++;
-          stats.by_type.images.size += file.size;
+          stats.by_type.images.size += fileSize;
           break;
         case FileType.VIDEOS:
           stats.by_type.videos.count++;
-          stats.by_type.videos.size += file.size;
+          stats.by_type.videos.size += fileSize;
           break;
         case FileType.DOCUMENTS:
         default:
           stats.by_type.documents.count++;
-          stats.by_type.documents.size += file.size;
+          stats.by_type.documents.size += fileSize;
           break;
       }
     }
