@@ -79,6 +79,14 @@ export default class StorageManager {
   }
 
   /**
+   * Public method: get upload URL info for direct browser upload
+   */
+  async get_upload_url_info(): Promise<{ uploadUrl: string; authToken: string }> {
+    const info = await this.#get_upload_url();
+    return { uploadUrl: info.uploadUrl, authToken: info.authorizationToken };
+  }
+
+  /**
    * Build Key: username/file_type/filename
    */
   #build_key(author: string, file_type: FileType, filename: string, folderPath?: string): string {

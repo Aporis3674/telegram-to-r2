@@ -25,7 +25,7 @@ export default {
     }
 
     // ===== Web upload page =====
-    if (url.pathname === "/upload" || url.pathname === "/api/upload") {
+    if (url.pathname === "/upload" || url.pathname.startsWith("/api/upload") || url.pathname.startsWith("/api/setup-cors") || url.pathname.startsWith("/api/setup-eu-bucket")) {
       return await handle_web_upload(request, env);
     }
 

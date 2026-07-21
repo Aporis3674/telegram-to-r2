@@ -192,6 +192,8 @@ curl "https://api.telegram.org/bot7123456789:AAH1234abcdEfGhIjKlMnOpQrStUvWxYz/s
 
 آدرس `https://your-worker-name.workers.dev/upload` رو توی مرورگر باز کن. رمزی که توی قدم ۷ تنظیم کردی رو وارد کن و فایل‌هات رو آپلود کن. این صفحه محدودیت حجم نداره و فایل‌های بزرگ‌تر از ۲۰ مگابایت هم آپلود میشن.
 
+![صفحه آپلود وب](screenshots/upload-page.png)
+
 ---
 
 ## 🎮 دستورات بات

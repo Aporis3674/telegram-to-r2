@@ -20,8 +20,8 @@
     ],
     "ALLOWED_USER_IDS": "[6546884158]",
     "BASE_URL": "https://cf-media-bc5f20d0.moohmadirani.workers.dev",
-    "B2_BUCKET_ID": "215e447304a18d009df80416",
-    "B2_BUCKET_NAME": "telegram-r2",
+    "B2_BUCKET_ID": "d16e84c3e4c18d509df80416",
+    "B2_BUCKET_NAME": "telegram-r2-eu",
     "B2_DOWNLOAD_URL": "https://f005.backblazeb2.com"
   }
 }
