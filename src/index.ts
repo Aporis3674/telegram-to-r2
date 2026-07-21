@@ -3,6 +3,7 @@ import { TelegramBotBuilder } from "./bot";
 import StorageManager from "./storage";
 import type { Env } from "./type";
 import { get_share_token, cleanup_expired_tokens } from "./db";
+import { handle_web_upload } from "./upload";
 
 // explore Env for grammy context
 declare module "grammy" {
@@ -21,6 +22,11 @@ export default {
     // ===== Handle file access (share tokens + direct B2 keys) =====
     if (url.pathname.startsWith("/file/") && request.method === "GET") {
       return await handle_file_request(url, env, request);
+    }
+
+    // ===== Web upload page =====
+    if (url.pathname === "/upload" || url.pathname === "/api/upload") {
+      return await handle_web_upload(request, env);
     }
 
     // ===== Camouflage: serve fake page for non-webhook requests =====

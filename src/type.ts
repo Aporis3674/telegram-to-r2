@@ -4,6 +4,7 @@ export interface Env {
   WEBHOOK_SECRET: string;
   ADMIN_USERNAMES: string[];
   ALLOWED_USER_IDS: string;
+  WEB_UPLOAD_PASSWORD: string;
   DB: D1Database;
 
   // B2 credentials
