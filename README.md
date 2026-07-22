@@ -1,4 +1,4 @@
-# 🤖 Telegram to B2 Bot
+# Telegram to B2 Bot
 
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Backblaze B2](https://img.shields.io/badge/Backblaze-B2-D32F2F?style=for-the-badge&logo=backblaze&logoColor=white)](https://www.backblaze.com/b2/cloud-storage.html)
@@ -6,271 +6,263 @@
 [![grammY](https://img.shields.io/badge/grammY-Framework-32ADFF?style=for-the-badge&logo=telegram&logoColor=white)](https://grammy.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-> **یک بات تلگرام که فایل‌هات رو روی Backblaze B2 (فضای ابری رایگان) ذخیره می‌کنه.**
-> کافیه فایل رو به بات بفرستی — لینک دانلود مستقیم برمی‌گردونه.
+> **A Telegram bot that stores your files on Backblaze B2 (free cloud storage).**
+> Send a file to the bot — get a direct download link back.
+
+[فارسی](README_fa.md)
 
 ---
 
-## ✨ امکانات
+## Features
 
-| امکان | توضیح |
-|:------|:------|
-| 📤 آپلود خودکار | فایل، عکس، ویدیو، آهنگ بفرست → آپلود روی B2 → لینک دانلود |
-| 📂 سیستم فولدر | فولدر بساز، فایل‌ها رو مرتب کن، بین فولدرها جابجا شو |
-| 🔗 لینک موقت | لینک دانلود با تاریخ انقضا بساز (مثلاً ۲۴ ساعته) |
-| 🔍 جستجوی فایل | فایل‌هات رو با اسم پیدا کن |
-| 📊 آمار ذخیره‌سازی | ببین چند فایل داری و چقدر فضا اشغال کردی |
-| 🔎 حالت اینلاین | توی هر چتی `@botname` تایپ کن تا فایل‌هات رو پیدا و ارسال کنی |
-| 🛡️ پنل ادمین | بلاک/آنبلاک کاربر، آمار کل، مدیریت فایل‌ها |
-| 🌐 صفحه استتار | درخواست‌های غیررباتی صفحه Docker.com نشون میده (ضد اسکن) |
-| 📱 آپلود از مرورگر | صفحه آپلود وب با لاگین، بدون محدودیت حجم |
-
----
-
-## 📋 پیش‌نیازها
-
-قبل از شروع، اینا رو داشته باش:
-
-1. **حساب Cloudflare** (رایگان) → [cloudflare.com](https://cloudflare.com)
-2. **حساب Backblaze B2** (رایگان، بدون نیاز به کارت بانکی) → [backblaze.com](https://www.backblaze.com/b2/cloud-storage.html)
-3. **بات تلگرام** → [@BotFather](https://t.me/botfather)
-4. **Node.js** نسخه ۱۸ یا بالاتر → [nodejs.org](https://nodejs.org)
-5. **Git** → [git-scm.com](https://git-scm.com)
+| Feature | Description |
+|:--------|:------------|
+| Auto Upload | Send files, images, videos, audio — auto-uploaded to B2 with a direct link |
+| Folder System | Create folders, organize files, move between folders |
+| Temporary Links | Generate download links with expiration (e.g. 24 hours) |
+| File Search | Find your files by name |
+| Storage Stats | See how many files you have and how much space they use |
+| Inline Mode | Type `@botname` in any chat to search and send files |
+| Admin Panel | Block/unblock users, view stats, manage files |
+| Camouflage | Non-bot requests show a Docker.com page (anti-scanner) |
+| Web Upload | Upload page with login, no file size limit |
 
 ---
 
-## 🚀 راه‌اندازی قدم به قدم
+## Prerequisites
 
-### قدم ۱: بات تلگرام بساز
+1. **Cloudflare account** (free) — [cloudflare.com](https://cloudflare.com)
+2. **Backblaze B2 account** (free, no credit card required) — [backblaze.com](https://www.backblaze.com/b2/cloud-storage.html)
+3. **Telegram bot** — [@BotFather](https://t.me/botfather)
+4. **Node.js** 18+ — [nodejs.org](https://nodejs.org)
+5. **Git** — [git-scm.com](https://git-scm.com)
 
-1. برو به [@BotFather](https://t.me/botfather)
-2. بنویس `/newbot`
-3. یه اسم برای بات انتخاب کن (مثلاً `My File Bot`)
-4. یه یوزرنیم انتخاب کن (مثلاً `myfiles_bot`)
-5. **توکن بات رو کپی کن** — چیزی شبیه اینه:
-   ```
-   7123456789:AAH1234abcdEfGhIjKlMnOpQrStUvWxYz
-   ```
-6. حالت اینلاین رو فعال کن:
-   - توی BotFather بنویس `/mybots`
-   - بات رو انتخاب کن
-   - **Bot Settings** → **Inline Mode** → **Turn on**
-   - placeholder: `🔍 جستجوی فایل...`
+---
 
-### قدم ۲: Backblaze B2 تنظیم کن
+## Setup (Step by Step)
 
-1. برو به [backblaze.com](https://www.backblaze.com) و ثبت‌نام کن
-2. از منوی سمت چپ **Buckets** → **Create a Bucket**
-   - Bucket Name: هر اسمی (مثلاً `telegram-files`)
+### Step 1: Create a Telegram Bot
+
+1. Go to [@BotFather](https://t.me/botfather)
+2. Send `/newbot`
+3. Choose a name (e.g. `My File Bot`)
+4. Choose a username (e.g. `myfiles_bot`)
+5. **Copy the bot token** — looks like `7123456789:***`
+6. Enable inline mode:
+   - Send `/mybots` to BotFather
+   - Select your bot
+   - **Bot Settings** > **Inline Mode** > **Turn on**
+   - Placeholder: `Search files...`
+
+### Step 2: Set Up Backblaze B2
+
+1. Sign up at [backblaze.com](https://www.backblaze.com)
+2. Go to **Buckets** > **Create a Bucket**
+   - Bucket Name: any name (e.g. `telegram-files`)
    - Files in Bucket are: **Public**
-3. از منوی سمت چپ **App Keys** → **Add a New Application Key**
-   - Key Name: هر اسمی (مثلاً `telegram-bot`)
-   - Bucket: bucket ساخته شده رو انتخاب کن
-   - **Create**
-4. این اطلاعات رو یادداشت کن:
-   - `keyID` — مثلاً `001234abcd567890`
-   - `applicationKey` — مثلاً `K001a2b3c4d5e6f7g8h9i0j`
-   - `bucketName` — مثلاً `telegram-files`
-   - `bucketID` — مثلاً `1234567890abcdef`
-   - `downloadUrl` — مثلاً `https://f000.backblazeb2.com`
+3. Go to **App Keys** > **Add a New Application Key**
+   - Key Name: any name (e.g. `telegram-bot`)
+   - Bucket: select your bucket
+   - Click **Create**
+4. Note down:
+   - `keyID` — e.g. `001234abcd567890`
+   - `applicationKey` — e.g. `K001a2b3c4d5e6f7g8h9i0j`
+   - `bucketName` — e.g. `telegram-files`
+   - `bucketID` — e.g. `1234567890abcdef`
+   - `downloadUrl` — e.g. `https://f000.backblazeb2.com`
 
-### قدم ۳: کد رو دانلود کن
+### Step 3: Clone and Install
 
 ```bash
-# کلون کردن پروژه
 git clone https://github.com/Aporis3674/telegram-to-r2.git
 cd telegram-to-r2
-
-# نصب پکیج‌ها
 pnpm install
 ```
 
-### قدم ۴: D1 دیتابیس بساز
+### Step 4: Create D1 Database
 
 ```bash
-# لاگین به Cloudflare
 pnpm wrangler login
-
-# دیتابیس بساز
 pnpm wrangler d1 create telegram-bot-db
 ```
 
-خروجی چیزی شبیه اینه:
+You'll see output like:
 ```
-✅ Successfully created DB 'telegram-bot-db'
+Successfully created DB 'telegram-bot-db'
 [[d1_databases]]
 binding = "DB"
 database_name = "telegram-bot-db"
 database_id = "abc123-def456-ghi789"
 ```
 
-**`database_id` رو کپی کن** و توی فایل `wrangler.jsonc` جایگزین کن:
+**Copy `database_id`** and replace it in `wrangler.jsonc`:
 
 ```jsonc
 "d1_databases": [
   {
     "binding": "DB",
     "database_name": "telegram-bot-db",
-    "database_id": "abc123-def456-ghi789"  // ← این رو عوض کن
+    "database_id": "abc123-def456-ghi789"  // replace this
   }
 ]
 ```
 
-### قدم ۵: جداول دیتابیس بساز
+### Step 5: Create Database Tables
 
 ```bash
 pnpm wrangler d1 execute telegram-bot-db --remote --file=./migration.sql
 ```
 
-### قدم ۶: تنظیمات wrangler.jsonc
+### Step 6: Configure wrangler.jsonc
 
-فایل `wrangler.jsonc` رو باز کن و این قسمت‌ها رو پر کن:
+Open `wrangler.jsonc` and fill in:
 
 ```jsonc
 "vars": {
-  "ADMIN_USERNAMES": "[\"your_telegram_username\"]",  // یوزرنیم تلگرامت (بدون @)
-  "BASE_URL": "https://xxx.workers.dev",             // آدرس Worker (بعد از deploy معلوم میشه)
-  "B2_BUCKET_NAME": "telegram-files",                // اسم bucket بک‌بلیز
-  "B2_BUCKET_ID": "1234567890abcdef",                // آیدی bucket بک‌بلیز
-  "B2_DOWNLOAD_URL": "https://f000.backblazeb2.com"  // آدرس دانلود بک‌بلیز
+  "ADMIN_USERNAMES": ["your_telegram_username"],
+  "BASE_URL": "https://xxx.workers.dev",
+  "B2_BUCKET_NAME": "telegram-files",
+  "B2_BUCKET_ID": "1234567890abcdef",
+  "B2_DOWNLOAD_URL": "https://f000.backblazeb2.com"
 }
 ```
 
-### قدم ۷: Secrets تنظیم کن
+### Step 7: Set Up Secrets
 
-اینا اطلاعات حساس هستن و نباید توی کد باشن:
+These are sensitive and should not be in code:
 
 ```bash
-# توکن بات تلگرام
-echo "7123456789:AAH1234abcdEfGhIjKlMnOpQrStUvWxYz" | pnpm wrangler secret put BOT_TOKEN
+# Telegram bot token
+echo "7123456789:***" | pnpm wrangler secret put BOT_TOKEN
 
-# آیدی بک‌بلیز
+# Backblaze key ID
 echo "001234abcd567890" | pnpm wrangler secret put B2_KEY_ID
 
-# کلید مخفی بک‌بلیز
+# Backblaze application key
 echo "K001a2b3c4d5e6f7g8h9i0j" | pnpm wrangler secret put B2_APP_KEY
 
-# رمز وبهوک (یه رمز دلخواه بذار)
+# Webhook secret (any random string)
 echo "mySuperSecret123" | pnpm wrangler secret put WEBHOOK_SECRET
 
-# رمز صفحه آپلود وب (یه رمز دلخواه بذار)
+# Web upload password (any random string)
 echo "myUploadPassword" | pnpm wrangler secret put WEB_UPLOAD_PASSWORD
 ```
 
-### قدم ۸: دیپلوی کن
+### Step 8: Deploy
 
 ```bash
 pnpm run deploy
 ```
 
-خروجی چیزی شبیه اینه:
+Output:
 ```
 Deployed cf-media-bc5f20d0 (5.61 sec)
   https://your-worker-name.workers.dev
 ```
 
-**آدرس Worker رو کپی کن.**
+**Copy your Worker URL.**
 
-### قدم ۹: وبهوک تلگرام رو ست کن
+### Step 9: Set Telegram Webhook
 
 ```bash
-curl "https://api.telegram.org/bot<توکن_بات>/setWebhook?url=https://your-worker-name.workers.dev/tg/hook&secret_token=راز_وبهوک"
+curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://your-worker-name.workers.dev/tg/hook&secret_token=WEBHOOK_SECRET"
 ```
 
-مثال واقعی:
+Example:
 ```bash
-curl "https://api.telegram.org/bot7123456789:AAH1234abcdEfGhIjKlMnOpQrStUvWxYz/setWebhook?url=https://your-worker-name.workers.dev/tg/hook&secret_token=mySuperSecret123"
+curl "https://api.telegram.org/bot7123456789:***/setWebhook?url=https://your-worker-name.workers.dev/tg/hook&secret_token=mySuperSecret123"
 ```
 
-جواب باید `{"ok":true}` باشه.
+Response should be `{"ok":true}`.
 
-### قدم ۱۰: تست کن! 🎉
+### Step 10: Test It
 
-برو به بات تلگرامت و `/start` بفرست. اگه جواب داد، یه فایل بفرست ببین آپلود میشه.
+Go to your Telegram bot and send `/start`. If it responds, send a file to test the upload.
 
-### صفحه آپلود وب
+### Web Upload Page
 
-آدرس `https://your-worker-name.workers.dev/upload` رو توی مرورگر باز کن. رمزی که توی قدم ۷ تنظیم کردی رو وارد کن و فایل‌هات رو آپلود کن. این صفحه محدودیت حجم نداره و فایل‌های بزرگ‌تر از ۲۰ مگابایت هم آپلود میشن.
+Open `https://your-worker-name.workers.dev/upload` in your browser. Enter the password you set in Step 7 and upload files. This page has no file size limit — files larger than 20 MB work fine.
 
-![صفحه آپلود وب](https://cf-media-bc5f20d0.moohmadirani.workers.dev/file/web%2Fauto%2FScreenshot%202026-07-21%20221047.png)
+![Web Upload Page](https://cf-media-bc5f20d0.moohmadirani.workers.dev/file/web%2Fauto%2FScreenshot%202026-07-21%20221047.png)
 
 ---
 
-## 🎮 دستورات بات
+## Bot Commands
 
-| دستور | توضیح |
-|:------|:------|
-| `/start` | پیام خوش‌آمدگویی |
-| `/help` | راهنمای دستورات |
-| `/list` | لیست فایل‌ها (مثال: `/list -t music`) |
-| `/delete <filename>` | حذف فایل |
-| `/stats` | آمار ذخیره‌سازی |
-| `/search <keyword>` | جستجوی فایل |
-| `/share <filename> <duration>` | لینک موقت بساز (مثال: `/share song.mp3 24h`) |
-| `/folders` | لیست فولدرها |
-| `/mkdir <name>` | ساخت فولدر |
-| `/cd <name>` | ورود به فولدر |
-| `/cd /` | برگشت به ریشه |
-| `/move <file> <folder>` | انتقال فایل به فولدر |
-| `/admin` | پنل ادمین (فقط ادمین‌ها) |
-| `/block @username` | بلاک کاربر (فقط ادمین‌ها) |
-| `/unblock @username` | آنبلاک کاربر (فقط ادمین‌ها) |
-| `/list_blocked` | لیست کاربران بلاک‌شده |
+| Command | Description |
+|:--------|:------------|
+| `/start` | Welcome message |
+| `/help` | Command guide |
+| `/list` | List files (e.g. `/list -t music`) |
+| `/delete <filename>` | Delete a file |
+| `/stats` | Storage stats |
+| `/search <keyword>` | Search files |
+| `/share <filename> <duration>` | Create temp link (e.g. `/share song.mp3 24h`) |
+| `/folders` | List folders |
+| `/mkdir <name>` | Create folder |
+| `/cd <name>` | Enter folder |
+| `/cd /` | Go back to root |
+| `/move <file> <folder>` | Move file to folder |
+| `/admin` | Admin panel (admins only) |
+| `/block @username` | Block user (admins only) |
+| `/unblock @username` | Unblock user (admins only) |
+| `/list_blocked` | List blocked users |
 
-**حالت اینلاین:** توی هر چتی `@yourbotname` تایپ کن تا فایل‌هات رو جستجو و ارسال کنی.
+**Inline mode:** Type `@yourbotname` in any chat to search and send files.
 
 ---
 
-## 🏗️ ساختار پروژه
+## Project Structure
 
 ```
 src/
-├── bot.ts           # منطق اصلی بات و تمام دستورات
-├── db/
-│   ├── schema.ts    # تعریف جداول دیتابیس
-│   └── index.ts     # توابع دیتابیس (بلاک، فولدر، لینک موقت)
-├── index.ts         # نقطه ورود Worker، مسیریابی درخواست‌ها
-├── nanoid.ts        # ساخت توکن تصادفی
-├── storage.ts       # عملیات B2 (آپلود، دانلود، حذف، جستجو)
-├── type.ts          # تایپ‌های TypeScript
-└── utils.ts         # قالب‌بندی پیام‌ها و توابع کمکی
+  bot.ts           Main bot logic and all commands
+  db/
+    schema.ts      Database table definitions
+    index.ts       Database functions (block, folder, temp links)
+  index.ts         Worker entry point, request routing
+  nanoid.ts        Random token generation
+  storage.ts       B2 operations (upload, download, delete, search)
+  type.ts          TypeScript type definitions
+  upload.ts        Web upload page and API
+  utils.ts         Message formatting and helpers
 ```
 
 ---
 
-## ❓ عیب‌یابی
+## Troubleshooting
 
-### بات جواب نمیده
-1. وبهوک رو چک کن: `curl "https://api.telegram.org/bot<TOKEN>/getWebhookInfo"`
-2. اگه `last_error_message` داره، ارور رو بخون
-3. `pending_update_count` اگه بالاست، یعنی وبهوک کار نمیکنه
-4. Secrets رو چک کن — مخصوصاً `WEBHOOK_SECRET`
+### Bot not responding
+1. Check webhook: `curl "https://api.telegram.org/bot<TOKEN>/getWebhookInfo"`
+2. If there's a `last_error_message`, read the error
+3. High `pending_update_count` means webhook isn't working
+4. Check your secrets — especially `WEBHOOK_SECRET`
 
-### ارور ۴۰۱ Unauthorized
-- `WEBHOOK_SECRET` توی Worker با `secret_token` توی لینک وبهوک فرق داره
+### 401 Unauthorized
+- `WEBHOOK_SECRET` in Worker doesn't match `secret_token` in webhook URL
 
-### ارور ۵۰۰ Internal Server Error
-- لاگ Worker رو ببین: `pnpm wrangler tail`
-- معمولاً مشکل از دیتابیس یا B2 credentials هست
+### 500 Internal Server Error
+- Check Worker logs: `pnpm wrangler tail`
+- Usually a database or B2 credentials issue
 
-### فایل آپلود نمیشه
-- `B2_KEY_ID` و `B2_APP_KEY` رو چک کن
-- مطمئن شو bucket **Public** هست
+### File not uploading
+- Check `B2_KEY_ID` and `B2_APP_KEY`
+- Make sure bucket is **Public**
 
 ---
 
-## 🤝 مشارکت
+## Contributing
 
-پذیرای Issue و Pull Request هستیم.
+Issues and pull requests are welcome.
 
-- 🐛 باگ گزارش: [Issues](https://github.com/Aporis3674/telegram-to-r2/issues)
-- 🔧 مشارکت: [Pull Requests](https://github.com/Aporis3674/telegram-to-r2/pulls)
+- Bug reports: [Issues](https://github.com/Aporis3674/telegram-to-r2/issues)
+- Contributions: [Pull Requests](https://github.com/Aporis3674/telegram-to-r2/pulls)
 
-## 📝 قدردانی
+## Credits
 
-این پروژه بر اساس [telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) ساخته شده.
-تکنیک استتار از پروژه [Nahan](https://github.com/nahan-bot/nahan) الهام گرفته شده.
+This project is based on [telegram-to-r2](https://github.com/fwqaaq/telegram-to-r2) by [@fwqaaq](https://github.com/fwqaaq).
+Camouflage technique inspired by [Nahan](https://github.com/nahan-bot/nahan).
 
-## 📄 لایسنس
+## License
 
 [MIT](LICENSE)
